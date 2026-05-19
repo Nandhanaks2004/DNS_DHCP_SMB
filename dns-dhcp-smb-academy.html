@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NET ACADEMY — DNS, DHCP & SMB Fundamentals</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#030912;--bg2:#050f1e;--bg3:#071628;
+  --cyan:#00e5ff;--green:#00ff88;--violet:#7c3aed;
+  --orange:#ff8c00;--red:#ff3366;--gold:#ffd700;
+  --dim:#0a1f36;--glass:rgba(0,229,255,0.04);
+  --glass2:rgba(0,255,136,0.05);--border:rgba(0,229,255,0.12);
+  --text:#b8d8e8;--muted:#3a6a80;--white:#e8f4f8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--cyan)}
+h1,h2,h3,.orb{font-family:'Orbitron',monospace}
+.mono{font-family:'Share Tech Mono',monospace}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(3,9,18,0.96);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
+.nav-logo{font-family:'Orbitron',monospace;font-size:12px;color:var(--cyan);letter-spacing:3px}
+.nav-tabs{display:flex;gap:0}
+.nav-tab{padding:0 1rem;height:54px;display:flex;align-items:center;font-size:11px;letter-spacing:2px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.3s;text-transform:uppercase}
+.nav-tab:hover,.nav-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.nav-pill{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* HERO */
+#hero{min-height:100vh;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 50%,#001428 0%,var(--bg) 65%)}
+.hero-bg-net{position:absolute;inset:0;pointer-events:none}
+.hero-content{position:relative;z-index:2;text-align:center;padding:80px 2rem 4rem;max-width:900px}
+.hero-badge{display:inline-flex;align-items:center;gap:0.6rem;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.25);color:var(--cyan);font-size:10px;letter-spacing:4px;padding:6px 18px;border-radius:2px;margin-bottom:2rem;font-family:'Share Tech Mono',monospace}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite}
+h1.hero-title{font-size:clamp(2rem,5.5vw,4.2rem);font-weight:900;color:#fff;letter-spacing:-1px;line-height:1.05;margin-bottom:1.2rem}
+h1.hero-title .c{color:var(--cyan)}.hero-title .g{color:var(--green)}.hero-title .o{color:var(--orange)}
+.hero-sub{font-size:1.05rem;color:var(--text);max-width:600px;margin:0 auto 2.5rem;line-height:1.75;font-weight:300}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:3rem}
+.btn-p{background:var(--cyan);color:#000;border:none;padding:11px 28px;font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;border-radius:2px;font-weight:700;transition:all 0.3s}
+.btn-p:hover{background:#fff;box-shadow:0 6px 24px rgba(0,229,255,0.4);transform:translateY(-2px)}
+.btn-g{background:transparent;color:var(--green);border:1px solid rgba(0,255,136,0.35);padding:11px 28px;font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;border-radius:2px;transition:all 0.3s}
+.btn-g:hover{background:rgba(0,255,136,0.1);transform:translateY(-2px)}
+.hero-feed{display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;max-width:680px;margin:0 auto}
+.hf-item{font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 12px;border-radius:2px;animation:fadeup 0.5s ease both}
+.hf-c{background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.25);color:var(--cyan)}
+.hf-g{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:var(--green)}
+.hf-o{background:rgba(255,140,0,0.08);border:1px solid rgba(255,140,0,0.25);color:var(--orange)}
+@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* NET CANVAS */
+#netCanvas{position:absolute;inset:0;opacity:0.4}
+
+/* SECTIONS */
+.section{padding:5rem 2rem;max-width:1200px;margin:0 auto}
+.sec-bg-alt{background:var(--bg2)}
+.sec-bg-alt2{background:var(--bg3)}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);max-width:1200px;margin:0 auto}
+.sec-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:4px;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem}
+.sec-label::before{content:'//';color:var(--green)}
+h2.sec-title{font-size:clamp(1.6rem,3.5vw,2.5rem);color:#fff;font-weight:700;margin-bottom:1rem;letter-spacing:-0.5px}
+.sec-desc{color:var(--text);line-height:1.8;font-size:1rem;max-width:680px;margin-bottom:2rem}
+
+/* GLASS CARDS */
+.card{background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:1.5rem;position:relative;overflow:hidden;transition:border-color 0.3s,transform 0.3s}
+.card:hover{border-color:rgba(0,229,255,0.35);transform:translateY(-2px)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;transition:opacity 0.3s}
+.card:hover::before{opacity:1}
+
+/* FLOW */
+.flow-row{display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin:1.5rem 0}
+.flow-box{background:var(--glass);border:1px solid var(--border);border-radius:3px;padding:6px 16px;font-family:'Share Tech Mono',monospace;font-size:12px;white-space:nowrap}
+.flow-box.cyan{border-color:rgba(0,229,255,0.3);color:var(--cyan)}
+.flow-box.green{border-color:rgba(0,255,136,0.3);color:var(--green)}
+.flow-box.orange{border-color:rgba(255,140,0,0.3);color:var(--orange)}
+.flow-box.red{border-color:rgba(255,51,102,0.3);color:var(--red)}
+.flow-arrow{color:var(--cyan);font-size:1.1rem}
+
+/* ANALOGY BOX */
+.analogy{background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.18);border-radius:4px;padding:1.2rem 1.5rem;margin:1.5rem 0}
+.analogy .label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green);letter-spacing:3px;margin-bottom:0.5rem}
+.analogy p{color:var(--white);font-size:0.95rem;line-height:1.6}
+
+/* DNS HIERARCHY */
+.dns-hierarchy{display:flex;flex-direction:column;align-items:center;gap:0;margin:2rem 0}
+.dh-node{display:flex;flex-direction:column;align-items:center;gap:0}
+.dh-box{padding:10px 24px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:12px;text-align:center;min-width:200px;cursor:pointer;transition:all 0.3s;border:1px solid;position:relative}
+.dh-box:hover{transform:scale(1.04)}
+.dh-line{width:2px;height:30px;background:linear-gradient(180deg,var(--cyan),rgba(0,229,255,0.2))}
+.dh-arrow{color:var(--cyan);font-size:1rem;margin:-5px 0}
+.dh-b{background:rgba(0,229,255,0.06);border-color:rgba(0,229,255,0.3);color:var(--cyan)}
+.dh-g{background:rgba(0,255,136,0.06);border-color:rgba(0,255,136,0.3);color:var(--green)}
+.dh-o{background:rgba(255,140,0,0.06);border-color:rgba(255,140,0,0.3);color:var(--orange)}
+.dh-r{background:rgba(255,51,102,0.06);border-color:rgba(255,51,102,0.3);color:var(--red)}
+.dh-v{background:rgba(124,58,237,0.1);border-color:rgba(124,58,237,0.4);color:#a78bfa}
+
+/* DNS RESOLVER SIM */
+.dns-sim{background:#040e1c;border:1px solid var(--border);border-radius:4px;overflow:hidden;margin:2rem 0}
+.dns-sim-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem}
+.dns-sim-input{flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(0,229,255,0.2);border-radius:3px;padding:8px 14px;color:#fff;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none}
+.dns-sim-input::placeholder{color:var(--muted)}
+.dns-sim-btn{background:var(--cyan);color:#000;border:none;padding:8px 20px;font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:2px;font-weight:700;transition:all 0.2s}
+.dns-sim-btn:hover{background:#fff}
+.dns-steps{padding:1.5rem;display:flex;flex-direction:column;gap:0.5rem;min-height:220px}
+.dns-step{display:flex;align-items:flex-start;gap:1rem;padding:10px 14px;border-radius:3px;opacity:0;transform:translateX(-12px);transition:all 0.5s ease;font-family:'Share Tech Mono',monospace;font-size:12px;border-left:3px solid}
+.dns-step.show{opacity:1;transform:translateX(0)}
+.ds-cache{background:rgba(255,140,0,0.06);border-left-color:var(--orange);color:var(--orange)}
+.ds-resolver{background:rgba(0,229,255,0.06);border-left-color:var(--cyan);color:var(--cyan)}
+.ds-root{background:rgba(124,58,237,0.06);border-left-color:#a78bfa;color:#a78bfa}
+.ds-tld{background:rgba(0,255,136,0.06);border-left-color:var(--green);color:var(--green)}
+.ds-auth{background:rgba(255,215,0,0.06);border-left-color:var(--gold);color:var(--gold)}
+.ds-result{background:rgba(0,255,136,0.1);border-left-color:var(--green);color:var(--green)}
+.dns-step .step-num{font-size:10px;opacity:0.6;min-width:24px}
+.dns-step .step-msg{line-height:1.5}
+
+/* DNS RECORDS */
+.records-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.2rem;margin:2rem 0}
+.rec-card{background:var(--glass);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:all 0.3s}
+.rec-card:hover{border-color:rgba(0,229,255,0.4);box-shadow:0 0 20px rgba(0,229,255,0.06)}
+.rec-header{padding:1rem 1.2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.rec-type{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:700}
+.rec-badge{font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 10px;border-radius:10px}
+.rec-body{padding:1.2rem}
+.rec-desc{font-size:0.9rem;line-height:1.6;margin-bottom:0.8rem}
+.rec-example{background:rgba(0,0,0,0.4);padding:8px 12px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:0.8rem;border-left:3px solid}
+.rec-attacker{font-size:0.82rem;padding:6px 10px;border-radius:3px;display:flex;align-items:flex-start;gap:0.5rem}
+
+/* TERMINAL */
+.terminal{background:#020c18;border:1px solid rgba(0,229,255,0.18);border-radius:6px;overflow:hidden;box-shadow:0 0 40px rgba(0,229,255,0.06)}
+.t-bar{background:#030f1c;padding:10px 14px;border-bottom:1px solid rgba(0,229,255,0.1);display:flex;align-items:center;gap:1rem}
+.t-dots{display:flex;gap:5px}
+.t-dot{width:11px;height:11px;border-radius:50%}
+.td1{background:#ff5f57}.td2{background:#febc2e}.td3{background:#28c840}
+.t-title{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);flex:1;text-align:center}
+.t-body{padding:1.2rem;min-height:280px;max-height:420px;overflow-y:auto;font-family:'Share Tech Mono',monospace;font-size:12.5px;line-height:1.9}
+.t-in-row{display:flex;align-items:center;border-top:1px solid rgba(0,229,255,0.08);padding:0.7rem 1.2rem}
+.t-ps{color:var(--green);white-space:nowrap;margin-right:0.5rem;font-family:'Share Tech Mono',monospace;font-size:12.5px}
+#tInput{flex:1;background:transparent;border:none;outline:none;color:#fff;font-family:'Share Tech Mono',monospace;font-size:12.5px;caret-color:var(--cyan)}
+.t-qb{display:flex;flex-wrap:wrap;gap:0.4rem;padding:0.7rem 1.2rem;border-top:1px solid rgba(0,229,255,0.05)}
+.qb{background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.18);color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 10px;border-radius:2px;cursor:pointer;transition:all 0.2s}
+.qb:hover{background:rgba(0,229,255,0.18);border-color:var(--cyan)}
+.t-out{color:var(--text);font-size:11.5px;white-space:pre-wrap}
+.t-cmd-line{color:#fff}.t-ok{color:var(--green)}.t-hi{color:var(--cyan)}.t-warn{color:var(--orange)}.t-err{color:var(--red)}.t-sec{color:#a78bfa}
+
+/* DHCP DORA */
+.dora-wrap{background:#040e1c;border:1px solid var(--border);border-radius:4px;overflow:hidden;margin:2rem 0}
+.dora-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.dora-title{font-family:'Orbitron',monospace;font-size:12px;color:var(--cyan);letter-spacing:2px}
+.dora-btn{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--green);font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;padding:6px 16px;cursor:pointer;border-radius:2px;transition:all 0.2s}
+.dora-btn:hover{background:rgba(0,255,136,0.2)}
+.dora-stage{padding:2rem;display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:start}
+.dora-actor{display:flex;flex-direction:column;align-items:center;gap:0.5rem}
+.dora-actor-icon{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;border:2px solid}
+.actor-client .dora-actor-icon{border-color:rgba(0,229,255,0.4);background:rgba(0,229,255,0.06)}
+.actor-server .dora-actor-icon{border-color:rgba(0,255,136,0.4);background:rgba(0,255,136,0.06)}
+.dora-actor-name{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px}
+.actor-client .dora-actor-name{color:var(--cyan)}
+.actor-server .dora-actor-name{color:var(--green)}
+.dora-channel{display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding-top:1.5rem;min-width:200px}
+.dora-packet{padding:6px 16px;border-radius:12px;font-family:'Share Tech Mono',monospace;font-size:11px;text-align:center;opacity:0;transform:scale(0.8);transition:all 0.5s ease;position:relative;min-width:140px}
+.dora-packet.show{opacity:1;transform:scale(1)}
+.dp-discover{background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.35);color:var(--cyan)}
+.dp-offer{background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.35);color:var(--green)}
+.dp-request{background:rgba(255,140,0,0.12);border:1px solid rgba(255,140,0,0.35);color:var(--orange)}
+.dp-ack{background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);color:#a78bfa}
+.dp-arrow{font-size:1.2rem;color:var(--muted)}
+.dora-info{padding:1rem 1.5rem;border-top:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text);min-height:60px;transition:all 0.3s}
+.dora-steps-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;margin:1.5rem 0}
+.dora-step-card{border-radius:4px;padding:1.2rem;border:1px solid;transition:all 0.3s;cursor:pointer}
+.dora-step-card:hover{transform:translateY(-2px)}
+.dsc-d{background:rgba(0,229,255,0.06);border-color:rgba(0,229,255,0.25)}
+.dsc-o{background:rgba(0,255,136,0.06);border-color:rgba(0,255,136,0.25)}
+.dsc-r{background:rgba(255,140,0,0.06);border-color:rgba(255,140,0,0.25)}
+.dsc-a{background:rgba(124,58,237,0.08);border-color:rgba(124,58,237,0.3)}
+.dsc-title{font-family:'Orbitron',monospace;font-size:12px;margin-bottom:0.5rem}
+.dsc-d .dsc-title{color:var(--cyan)}.dsc-o .dsc-title{color:var(--green)}.dsc-r .dsc-title{color:var(--orange)}.dsc-a .dsc-title{color:#a78bfa}
+.dsc-desc{font-size:0.88rem;line-height:1.6;color:var(--text)}
+.dsc-packet{font-family:'Share Tech Mono',monospace;font-size:10px;margin-top:0.6rem;padding:4px 8px;border-radius:2px;display:inline-block}
+.dsc-d .dsc-packet{background:rgba(0,229,255,0.1);color:var(--cyan)}
+.dsc-o .dsc-packet{background:rgba(0,255,136,0.1);color:var(--green)}
+.dsc-r .dsc-packet{background:rgba(255,140,0,0.1);color:var(--orange)}
+.dsc-a .dsc-packet{background:rgba(124,58,237,0.1);color:#a78bfa}
+
+/* SMB */
+.smb-diagram{display:flex;align-items:center;justify-content:center;gap:2rem;flex-wrap:wrap;margin:2rem 0;padding:2rem;background:#040e1c;border:1px solid var(--border);border-radius:4px}
+.smb-node{display:flex;flex-direction:column;align-items:center;gap:0.6rem;padding:1.2rem;border-radius:4px;border:1px solid var(--border);background:var(--glass);min-width:120px;text-align:center}
+.smb-node .icon{font-size:2.2rem}
+.smb-node .label{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px}
+.smb-node .sublabel{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)}
+.smb-conn{display:flex;flex-direction:column;align-items:center;gap:4px}
+.smb-line{width:60px;height:2px;background:linear-gradient(90deg,var(--cyan),var(--green));position:relative;overflow:hidden}
+.smb-line::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.9),transparent);animation:flowline 2s linear infinite}
+@keyframes flowline{to{left:200%}}
+.smb-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--cyan)}
+
+/* DHCP ATTACK */
+.attack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;margin:2rem 0}
+.attack-card{border-radius:4px;padding:1.3rem;border:1px solid rgba(255,51,102,0.2);background:rgba(255,51,102,0.04);transition:all 0.3s}
+.attack-card:hover{border-color:rgba(255,51,102,0.4)}
+.attack-icon{font-size:1.6rem;margin-bottom:0.8rem}
+.attack-name{font-family:'Orbitron',monospace;font-size:12px;color:var(--red);margin-bottom:0.5rem}
+.attack-desc{font-size:0.88rem;line-height:1.6}
+.defense-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin:1.5rem 0}
+.def-card{border-radius:4px;padding:1rem;border:1px solid rgba(0,255,136,0.2);background:rgba(0,255,136,0.04)}
+.def-icon{font-size:1.2rem;margin-bottom:0.5rem}
+.def-title{font-family:'Orbitron',monospace;font-size:11px;color:var(--green);margin-bottom:4px}
+.def-desc{font-size:0.85rem;line-height:1.5}
+
+/* COMBINED FLOW */
+.combined-flow{display:flex;flex-direction:column;align-items:center;gap:0;margin:2rem auto;max-width:500px}
+.cf-step{display:flex;align-items:center;gap:1.2rem;width:100%;padding:1rem 1.5rem;border-radius:4px;border:1px solid var(--border);background:var(--glass);transition:all 0.3s}
+.cf-step:hover{border-color:rgba(0,229,255,0.35);transform:translateX(4px)}
+.cf-num{font-family:'Orbitron',monospace;font-size:1.2rem;min-width:36px;font-weight:700}
+.cf-content .cf-proto{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;margin-bottom:3px}
+.cf-content .cf-action{font-size:0.85rem;color:var(--muted)}
+.cf-connector{width:2px;height:24px;background:linear-gradient(180deg,var(--cyan),rgba(0,229,255,0.1));margin-left:2.5rem}
+
+/* QUIZ */
+.quiz-block{background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.18);border-radius:4px;padding:2rem;margin:1.5rem 0}
+.quiz-q{font-family:'Orbitron',monospace;font-size:13px;color:#fff;margin-bottom:1.5rem;line-height:1.5}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1rem}
+.qo{background:rgba(0,0,0,0.3);border:1px solid rgba(0,229,255,0.12);border-radius:3px;padding:0.8rem 1rem;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:11.5px;color:var(--text);transition:all 0.2s;text-align:left}
+.qo:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,0.05)}
+.qo.correct{border-color:var(--green)!important;background:rgba(0,255,136,0.1)!important;color:var(--green)!important}
+.qo.wrong{border-color:var(--red)!important;background:rgba(255,51,102,0.1)!important;color:var(--red)!important}
+.qfb{padding:0.8rem 1rem;border-radius:3px;font-size:0.9rem;font-family:'Share Tech Mono',monospace;display:none;margin-top:0.5rem}
+.qfb.show{display:block}
+.quiz-score-bar{display:flex;justify-content:flex-end;margin-bottom:1rem;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)}
+.quiz-score-bar span{color:var(--cyan)}
+
+/* PROGRESS NAV */
+.prog-nav{position:fixed;right:1rem;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;z-index:100}
+.pd{width:7px;height:7px;border-radius:50%;background:var(--dim);border:1px solid var(--muted);cursor:pointer;transition:all 0.3s}
+.pd.active{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+
+/* CONCLUSION */
+#conclusion{background:radial-gradient(ellipse at 50% 100%,#001428 0%,var(--bg) 60%);padding:6rem 2rem;text-align:center}
+.conc-quote{font-family:'Orbitron',monospace;font-size:clamp(1.1rem,2.5vw,1.8rem);color:#fff;max-width:650px;margin:0 auto 3rem;line-height:1.4}
+.conc-quote .hi{color:var(--cyan)}
+.conc-flow{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0.6rem;margin:2rem auto;max-width:700px}
+.cbox{background:var(--glass);border:1px solid var(--border);padding:8px 18px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:11px}
+.cbox.dhcp{border-color:rgba(0,229,255,0.3);color:var(--cyan)}
+.cbox.dns{border-color:rgba(0,255,136,0.3);color:var(--green)}
+.cbox.tcp{border-color:rgba(255,140,0,0.3);color:var(--orange)}
+.cbox.smb{border-color:rgba(124,58,237,0.3);color:#a78bfa}
+.cbox.done{border-color:rgba(255,215,0,0.3);color:var(--gold)}
+.carr{color:var(--cyan)}
+
+/* RESPONSIVE */
+@media(max-width:768px){.quiz-opts{grid-template-columns:1fr}.dora-stage{grid-template-columns:1fr}.nav-tabs{display:none}.dora-channel{min-width:120px}.wireshark-compare,.mv-grid{grid-template-columns:1fr}}
+
+/* COMPONENT EXTRAS */
+.port-pill{display:inline-flex;align-items:center;gap:0.4rem;font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 12px;border-radius:10px;margin:0.2rem}
+.pp-udp{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:var(--cyan)}
+.pp-tcp{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--green)}
+.info-box{background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.15);border-radius:4px;padding:1.2rem 1.5rem;margin:1.5rem 0}
+.info-box.warn{background:rgba(255,140,0,0.04);border-color:rgba(255,140,0,0.2)}
+.info-box.danger{background:rgba(255,51,102,0.04);border-color:rgba(255,51,102,0.2)}
+.info-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;margin-bottom:0.5rem}
+.info-label.c{color:var(--cyan)}.info-label.w{color:var(--orange)}.info-label.d{color:var(--red)}
+.tag-row{display:flex;flex-wrap:wrap;gap:0.5rem;margin:1rem 0}
+.tag{font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 12px;border-radius:2px}
+.tag-c{background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:var(--cyan)}
+.tag-g{background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.2);color:var(--green)}
+.tag-o{background:rgba(255,140,0,0.08);border:1px solid rgba(255,140,0,0.2);color:var(--orange)}
+.tag-r{background:rgba(255,51,102,0.08);border:1px solid rgba(255,51,102,0.2);color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- PROGRESS NAV -->
+<div class="prog-nav" id="progNav">
+  <div class="pd active" onclick="goSec('hero')" title="Hero"></div>
+  <div class="pd" onclick="goSec('what-is-dns')" title="DNS Intro"></div>
+  <div class="pd" onclick="goSec('dns-servers')" title="DNS Servers"></div>
+  <div class="pd" onclick="goSec('dns-resolution')" title="Resolution"></div>
+  <div class="pd" onclick="goSec('dns-records')" title="DNS Records"></div>
+  <div class="pd" onclick="goSec('dns-lab')" title="DNS Lab"></div>
+  <div class="pd" onclick="goSec('dns-recon')" title="DNS Recon"></div>
+  <div class="pd" onclick="goSec('dhcp-intro')" title="DHCP"></div>
+  <div class="pd" onclick="goSec('dora')" title="DORA"></div>
+  <div class="pd" onclick="goSec('dhcp-security')" title="DHCP Security"></div>
+  <div class="pd" onclick="goSec('smb')" title="SMB"></div>
+  <div class="pd" onclick="goSec('combined')" title="Combined Flow"></div>
+  <div class="pd" onclick="goSec('quiz')" title="Quiz"></div>
+  <div class="pd" onclick="goSec('conclusion')" title="Conclusion"></div>
+</div>
+
+<nav>
+  <div class="nav-logo">⬡ NET ACADEMY</div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="goSec('what-is-dns')">DNS</div>
+    <div class="nav-tab" onclick="goSec('dhcp-intro')">DHCP</div>
+    <div class="nav-tab" onclick="goSec('smb')">SMB</div>
+    <div class="nav-tab" onclick="goSec('dns-recon')">RECON</div>
+    <div class="nav-tab" onclick="goSec('dns-lab')">LAB</div>
+    <div class="nav-tab" onclick="goSec('quiz')">QUIZ</div>
+  </div>
+  <div class="nav-pill">● LIVE NETWORK</div>
+</nav>
+
+<!-- HERO -->
+<section id="hero" data-sec="0">
+  <canvas id="netCanvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge"><div class="badge-dot"></div>CYBERSECURITY NETWORKING ACADEMY // MODULE 04</div>
+    <h1 class="hero-title"><span class="c">DNS</span>, <span class="g">DHCP</span> &amp; <span class="o">SMB</span><br>Fundamentals</h1>
+    <p class="hero-sub">Understand how modern networks communicate, assign addresses, resolve domains, and share resources — the invisible protocols powering every network.</p>
+    <div class="hero-btns">
+      <button class="btn-p" onclick="goSec('what-is-dns')">START LEARNING</button>
+      <button class="btn-g" onclick="goSec('dns-lab')">OPEN TERMINAL LAB →</button>
+    </div>
+    <div class="hero-feed" id="heroFeed"></div>
+  </div>
+</section>
+
+<!-- ═══════════════ WHAT IS DNS ═══════════════ -->
+<div class="divider"></div>
+<section id="what-is-dns" class="sec-bg-alt" data-sec="1">
+<div class="section">
+  <div class="sec-label">DNS FUNDAMENTALS</div>
+  <h2 class="sec-title">What is DNS?</h2>
+  <p class="sec-desc">DNS (Domain Name System) converts human-friendly domain names into machine-friendly IP addresses. Without DNS, the internet as we know it couldn't exist for humans.</p>
+
+  <div class="analogy">
+    <div class="label">REAL-WORLD ANALOGY</div>
+    <p>DNS is like your phone's contact list. You don't remember phone numbers — you save <strong style="color:var(--cyan)">Mom → 9876543210</strong>. Similarly, DNS maps <strong style="color:var(--green)">google.com → 142.250.x.x</strong>. Without it, you'd memorize a 12-digit IP for every website you visit.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:2rem 0">
+    <div class="card">
+      <div style="font-size:1.8rem;margin-bottom:0.8rem">🧠</div>
+      <h3 class="orb" style="font-size:13px;color:var(--cyan);margin-bottom:0.5rem">HUMAN-READABLE</h3>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:1.2rem;color:#fff;margin-bottom:0.5rem">google.com</div>
+      <div style="font-size:0.88rem;line-height:1.6">Easy to remember, type, and share. Used in browsers, emails, and URLs. Meaningless to network hardware.</div>
+    </div>
+    <div class="card">
+      <div style="font-size:1.8rem;margin-bottom:0.8rem">🖥️</div>
+      <h3 class="orb" style="font-size:13px;color:var(--green);margin-bottom:0.5rem">MACHINE-READABLE</h3>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:1.2rem;color:#fff;margin-bottom:0.5rem">142.250.183.14</div>
+      <div style="font-size:0.88rem;line-height:1.6">Used by routers and network infrastructure. Impossible to memorize for thousands of sites. Required for actual routing.</div>
+    </div>
+  </div>
+
+  <div class="flow-row">
+    <div class="flow-box cyan">You type google.com</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">DNS Resolution</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box green">142.250.183.14</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">TCP Connection</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box green">Website Opens ✓</div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-label c">KEY INSIGHT</div>
+    <p style="font-size:0.95rem;line-height:1.7">DNS happens <strong style="color:var(--cyan)">BEFORE</strong> HTTP. Before any website loads, before any data transfers, DNS silently finds the server's IP address. No DNS → No IP → No HTTP → No website.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-top:2rem">
+    <div class="card"><div style="color:var(--cyan);font-size:1.4rem;margin-bottom:0.5rem">📍</div><div class="orb" style="font-size:11px;color:var(--cyan);margin-bottom:4px">APPLICATION LAYER</div><div style="font-size:0.88rem;line-height:1.5">DNS operates at the Application Layer of the TCP/IP model — same layer as HTTP, FTP, SMTP.</div></div>
+    <div class="card"><div style="color:var(--green);font-size:1.4rem;margin-bottom:0.5rem">📡</div><div class="orb" style="font-size:11px;color:var(--green);margin-bottom:4px">UDP PORT 53</div><div style="font-size:0.88rem;line-height:1.5">DNS uses UDP port 53 for standard queries (fast). TCP port 53 for large responses or zone transfers.</div></div>
+    <div class="card"><div style="color:var(--orange);font-size:1.4rem;margin-bottom:0.5rem">⚡</div><div class="orb" style="font-size:11px;color:var(--orange);margin-bottom:4px">MILLISECONDS</div><div style="font-size:0.88rem;line-height:1.5">The entire DNS resolution process typically completes in under 100ms — invisible to the user.</div></div>
+    <div class="card"><div style="color:#a78bfa;font-size:1.4rem;margin-bottom:0.5rem">💾</div><div class="orb" style="font-size:11px;color:#a78bfa;margin-bottom:4px">TTL CACHING</div><div style="font-size:0.88rem;line-height:1.5">DNS responses are cached (TTL = Time To Live). Repeat visits skip DNS lookup, improving speed.</div></div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ DNS SERVERS ═══════════════ -->
+<div class="divider"></div>
+<section id="dns-servers" data-sec="2">
+<div class="section">
+  <div class="sec-label">DNS INFRASTRUCTURE</div>
+  <h2 class="sec-title">Types of DNS Servers</h2>
+  <p class="sec-desc">DNS is a teamwork of 4 server types. When you type a domain, they work together in sequence to find the IP — like a relay race across the internet.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start">
+    <div class="dns-hierarchy">
+      <div class="dh-node">
+        <div class="dh-box dh-b" onclick="showServerDetail(0)" style="border-width:2px"><strong>🌐 Your Browser</strong><div style="font-size:10px;margin-top:4px;opacity:0.7">DNS client — makes the request</div></div>
+        <div class="dh-line"></div><div class="dh-arrow">↓</div><div class="dh-line"></div>
+        <div class="dh-box dh-b" onclick="showServerDetail(1)" style="font-size:13px"><strong>📡 Recursive Resolver</strong><div style="font-size:10px;margin-top:4px;opacity:0.7">ISP DNS or 8.8.8.8 — does all the work</div></div>
+        <div class="dh-line"></div><div class="dh-arrow">↓</div><div class="dh-line"></div>
+        <div class="dh-box dh-v" onclick="showServerDetail(2)" style="font-size:13px"><strong>🌍 Root Server (13 global)</strong><div style="font-size:10px;margin-top:4px;opacity:0.7">Knows where .com, .org, .in servers are</div></div>
+        <div class="dh-line"></div><div class="dh-arrow">↓</div><div class="dh-line"></div>
+        <div class="dh-box dh-g" onclick="showServerDetail(3)" style="font-size:13px"><strong>📂 TLD Server (.com, .org)</strong><div style="font-size:10px;margin-top:4px;opacity:0.7">Knows which authoritative server manages the domain</div></div>
+        <div class="dh-line"></div><div class="dh-arrow">↓</div><div class="dh-line"></div>
+        <div class="dh-box dh-o" onclick="showServerDetail(4)" style="font-size:13px"><strong>⭐ Authoritative Server</strong><div style="font-size:10px;margin-top:4px;opacity:0.7">Holds actual DNS records — gives real answer</div></div>
+      </div>
+    </div>
+    <div id="serverDetail" class="card" style="min-height:200px">
+      <div style="font-size:2rem;margin-bottom:1rem">👆</div>
+      <div style="font-family:'Orbitron',monospace;font-size:12px;color:var(--muted);margin-bottom:0.5rem">CLICK ANY SERVER</div>
+      <p style="font-size:0.9rem;line-height:1.6;color:var(--muted)">Click a server node on the left to learn its role, purpose, and why it exists in the DNS hierarchy.</p>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:2rem">
+    <div class="info-label c">KEY INSIGHT</div>
+    <p style="font-size:0.95rem;line-height:1.7"><strong style="color:var(--gold)">"Only the Authoritative server knows the real IP. Everyone else just shows the path."</strong> The recursive resolver does all the legwork so your browser doesn't have to.</p>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ DNS RESOLUTION ═══════════════ -->
+<div class="divider"></div>
+<section id="dns-resolution" class="sec-bg-alt" data-sec="3">
+<div class="section">
+  <div class="sec-label">INTERACTIVE SIMULATOR</div>
+  <h2 class="sec-title">DNS Resolution — Step by Step</h2>
+  <p class="sec-desc">Type any domain name and watch the full DNS resolution process animate in real time, showing every step from browser cache to authoritative server response.</p>
+
+  <div class="dns-sim">
+    <div class="dns-sim-header">
+      <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted)">DOMAIN →</span>
+      <input class="dns-sim-input" id="dnsInput" type="text" placeholder="facebook.com" value="facebook.com">
+      <button class="dns-sim-btn" onclick="runDNSResolution()">RESOLVE</button>
+    </div>
+    <div class="dns-steps" id="dnsSteps">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);padding:1rem">Enter a domain above and click RESOLVE to watch the DNS process step by step...</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ DNS RECORDS ═══════════════ -->
+<div class="divider"></div>
+<section id="dns-records" data-sec="4">
+<div class="section">
+  <div class="sec-label">DNS RECORD TYPES</div>
+  <h2 class="sec-title">DNS Records — The Intelligence Mine</h2>
+  <p class="sec-desc">DNS stores much more than IP addresses. Each record type reveals a different layer of organizational infrastructure — which is why DNS is the first stop for attackers during reconnaissance.</p>
+
+  <div class="records-grid" id="recordsGrid"></div>
+</div>
+</section>
+
+<!-- ═══════════════ DNS COMMAND LAB ═══════════════ -->
+<div class="divider"></div>
+<section id="dns-lab" class="sec-bg-alt" data-sec="5">
+<div class="section">
+  <div class="sec-label">COMMAND LAB</div>
+  <h2 class="sec-title">DNS Terminal Simulator</h2>
+  <p class="sec-desc">Practice nslookup and dig commands. See realistic outputs and learn to read DNS data like a penetration tester.</p>
+
+  <div class="terminal">
+    <div class="t-bar">
+      <div class="t-dots"><div class="t-dot td1"></div><div class="t-dot td2"></div><div class="t-dot td3"></div></div>
+      <div class="t-title">analyst@kali ~ — dns terminal</div>
+      <span class="nav-pill">● CONNECTED</span>
+    </div>
+    <div class="t-body" id="tOutput">
+      <div><span class="t-hi">DNS TERMINAL SIMULATOR — NET ACADEMY v2.0</span></div>
+      <div><span style="color:var(--muted);font-size:11px">Target: tesla.com | Type 'help' for commands or use quick buttons</span></div>
+      <div>&nbsp;</div>
+    </div>
+    <div class="t-in-row">
+      <span class="t-ps">analyst@kali:~$</span>
+      <input type="text" id="tInput" placeholder="type command..." autocomplete="off" spellcheck="false">
+    </div>
+    <div class="t-qb">
+      <button class="qb" onclick="tRun('nslookup tesla.com')">nslookup</button>
+      <button class="qb" onclick="tRun('nslookup -type=mx tesla.com')">nslookup mx</button>
+      <button class="qb" onclick="tRun('nslookup -type=ns tesla.com')">nslookup ns</button>
+      <button class="qb" onclick="tRun('dig tesla.com')">dig A</button>
+      <button class="qb" onclick="tRun('dig mx tesla.com')">dig mx</button>
+      <button class="qb" onclick="tRun('dig ns tesla.com')">dig ns</button>
+      <button class="qb" onclick="tRun('dig txt tesla.com')">dig txt</button>
+      <button class="qb" onclick="tRun('dig -x 8.8.8.8')">dig -x (PTR)</button>
+      <button class="qb" onclick="tRun('dig axfr @ns1.tesla.com tesla.com')">zone transfer</button>
+      <button class="qb" onclick="tRun('sublist3r -d tesla.com')">subdomain enum</button>
+      <button class="qb" onclick="tRun('ipconfig /all')">ipconfig /all</button>
+      <button class="qb" onclick="tRun('help')">help</button>
+      <button class="qb" onclick="tClear()">clear</button>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ DNS RECON ═══════════════ -->
+<div class="divider"></div>
+<section id="dns-recon" data-sec="6">
+<div class="section">
+  <div class="sec-label">CYBERSECURITY PERSPECTIVE</div>
+  <h2 class="sec-title">DNS as an Attacker's Goldmine</h2>
+  <p class="sec-desc">Before touching the target, attackers read its DNS records. DNS is publicly accessible — no login, no hacking, just querying. It reveals organizational infrastructure silently.</p>
+
+  <div class="analogy">
+    <div class="label">ATTACKER MINDSET</div>
+    <p>"DNS reveals the company's internal structure without touching the system. One domain lookup can reveal mail servers, cloud providers, third-party services, APIs, and hidden dev environments."</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem;margin:2rem 0">
+    <div class="card" style="border-left:3px solid var(--cyan)">
+      <div style="font-size:1.4rem;margin-bottom:0.6rem">🎯</div>
+      <div class="orb" style="font-size:11px;color:var(--cyan);margin-bottom:0.5rem">A RECORD RECON</div>
+      <div style="font-size:0.88rem;line-height:1.6;margin-bottom:0.8rem">Find the real server IP. Use for Nmap scanning, identifying hosting provider (AWS/Azure), and bypassing CDN protection.</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--green);background:rgba(0,0,0,0.4);padding:6px 10px;border-radius:3px">dig example.com</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--orange)">
+      <div style="font-size:1.4rem;margin-bottom:0.6rem">📧</div>
+      <div class="orb" style="font-size:11px;color:var(--orange);margin-bottom:0.5rem">MX RECORD RECON</div>
+      <div style="font-size:0.88rem;line-height:1.6;margin-bottom:0.8rem">Identify mail servers. Used for phishing preparation, spear phishing campaigns, and discovering email infrastructure weaknesses.</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--green);background:rgba(0,0,0,0.4);padding:6px 10px;border-radius:3px">dig mx example.com</div>
+    </div>
+    <div class="card" style="border-left:3px solid #a78bfa">
+      <div style="font-size:1.4rem;margin-bottom:0.6rem">🔑</div>
+      <div class="orb" style="font-size:11px;color:#a78bfa;margin-bottom:0.5rem">TXT RECORD LEAKAGE</div>
+      <div style="font-size:0.88rem;line-height:1.6;margin-bottom:0.8rem">TXT records reveal SPF policies, domain verifications, and third-party services (Google Workspace, SendGrid, etc.) — exposing the tech stack.</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--green);background:rgba(0,0,0,0.4);padding:6px 10px;border-radius:3px">dig txt example.com</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--green)">
+      <div style="font-size:1.4rem;margin-bottom:0.6rem">🌿</div>
+      <div class="orb" style="font-size:11px;color:var(--green);margin-bottom:0.5rem">SUBDOMAIN DISCOVERY</div>
+      <div style="font-size:0.88rem;line-height:1.6;margin-bottom:0.8rem">dev.example.com, admin.example.com, staging.example.com — subdomains are often less secured than the main site. Each is a potential attack entry point.</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--green);background:rgba(0,0,0,0.4);padding:6px 10px;border-radius:3px">sublist3r -d example.com</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--red)">
+      <div style="font-size:1.4rem;margin-bottom:0.6rem">💥</div>
+      <div class="orb" style="font-size:11px;color:var(--red);margin-bottom:0.5rem">ZONE TRANSFER (AXFR)</div>
+      <div style="font-size:0.88rem;line-height:1.6;margin-bottom:0.8rem">Misconfigured DNS servers can dump their entire record set to anyone who asks. This reveals ALL subdomains, internal servers, mail systems in one request.</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--red);background:rgba(0,0,0,0.4);padding:6px 10px;border-radius:3px">dig axfr @ns1.example.com example.com</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--gold)">
+      <div style="font-size:1.4rem;margin-bottom:0.6rem">🔄</div>
+      <div class="orb" style="font-size:11px;color:var(--gold);margin-bottom:0.5rem">REVERSE DNS (PTR)</div>
+      <div style="font-size:0.88rem;line-height:1.6;margin-bottom:0.8rem">Map IP addresses back to domain names. When scanning IP ranges with Nmap, PTR records reveal which domains live on each IP — expanding the target list.</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--green);background:rgba(0,0,0,0.4);padding:6px 10px;border-radius:3px">dig -x &lt;ip-address&gt;</div>
+    </div>
+  </div>
+
+  <div class="info-box warn">
+    <div class="info-label w">PENTEST WORKFLOW</div>
+    <p style="font-size:0.92rem;line-height:1.7">Every web pentest begins with DNS recon. One domain becomes 20+ subdomains + mail servers + API servers + dev servers. <strong style="color:var(--orange)">If you master DNS, you already understand half of the recon phase.</strong></p>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ DHCP INTRO ═══════════════ -->
+<div class="divider"></div>
+<section id="dhcp-intro" class="sec-bg-alt" data-sec="7">
+<div class="section">
+  <div class="sec-label">DHCP FUNDAMENTALS</div>
+  <h2 class="sec-title">What is DHCP?</h2>
+  <p class="sec-desc">DHCP (Dynamic Host Configuration Protocol) automatically assigns network configuration to devices when they join a network. Without DHCP, every device would need manual IP configuration.</p>
+
+  <div class="analogy">
+    <div class="label">REAL-WORLD ANALOGY</div>
+    <p>DHCP is like <strong style="color:var(--cyan)">hotel reception</strong>. When you check in, the receptionist automatically assigns you a room number (IP), gives you the floor plan (subnet mask), tells you the main entrance (gateway), and the concierge number (DNS). You don't configure anything — it just works.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin:2rem 0">
+    <div class="card" style="border-color:rgba(255,51,102,0.2)">
+      <div style="color:var(--red);font-family:'Orbitron',monospace;font-size:12px;margin-bottom:1rem">WITHOUT DHCP</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.88rem;line-height:1.6">
+        <div style="display:flex;gap:0.5rem"><span style="color:var(--red)">✗</span> Admin must manually configure every device</div>
+        <div style="display:flex;gap:0.5rem"><span style="color:var(--red)">✗</span> IP conflicts when two devices use same address</div>
+        <div style="display:flex;gap:0.5rem"><span style="color:var(--red)">✗</span> Scaling to 1000 devices is a nightmare</div>
+        <div style="display:flex;gap:0.5rem"><span style="color:var(--red)">✗</span> Mobile devices can't auto-join new networks</div>
+        <div style="display:flex;gap:0.5rem"><span style="color:var(--red)">✗</span> No guest Wi-Fi possible</div>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(0,255,136,0.2)">
+      <div style="color:var(--green);font-family:'Orbitron',monospace;font-size:12px;margin-bottom:1rem">WITH DHCP</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.88rem;line-height:1.6">
+        <div style="display:flex;gap:0.5rem"><span style="color:var(--green)">✓</span> Devices auto-configure in seconds</div>
+        <div style="display:flex;gap:0.5rem"><span style="color:var(--green)">✓</span> Conflict prevention via IP pool management</div>
+        <div style="display:flex;gap:0.5rem"><span style="color:var(--green)">✓</span> Scale to thousands of devices effortlessly</div>
+        <div style="display:flex;gap:0.5rem"><span style="color:var(--green)">✓</span> Phones, laptops, IoT join seamlessly</div>
+        <div style="display:flex;gap:0.5rem"><span style="color:var(--green)">✓</span> Guest networks are trivially managed</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin:2rem 0">
+    <div class="sec-label" style="margin-bottom:1rem">DHCP COMPONENTS</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem">
+      <div class="card"><div style="font-size:1.2rem;margin-bottom:0.5rem">🖥️</div><div class="orb" style="font-size:11px;color:var(--cyan);margin-bottom:4px">DHCP SERVER</div><div style="font-size:0.85rem;line-height:1.5">Manages IP pool and assigns addresses with configuration options. Usually your router or a dedicated server.</div></div>
+      <div class="card"><div style="font-size:1.2rem;margin-bottom:0.5rem">💻</div><div class="orb" style="font-size:11px;color:var(--green);margin-bottom:4px">DHCP CLIENT</div><div style="font-size:0.85rem;line-height:1.5">Any device requesting IP config — PC, phone, printer, IoT sensor. Sends DISCOVER to start the process.</div></div>
+      <div class="card"><div style="font-size:1.2rem;margin-bottom:0.5rem">🔀</div><div class="orb" style="font-size:11px;color:var(--orange);margin-bottom:4px">DHCP RELAY</div><div style="font-size:0.85rem;line-height:1.5">Forwards DHCP messages between subnets when client and server are on different networks.</div></div>
+      <div class="card"><div style="font-size:1.2rem;margin-bottom:0.5rem">🏊</div><div class="orb" style="font-size:11px;color:#a78bfa;margin-bottom:4px">IP POOL</div><div style="font-size:0.85rem;line-height:1.5">Range of available IP addresses. Server allocates from this pool. Exclusions/reservations can be set.</div></div>
+      <div class="card"><div style="font-size:1.2rem;margin-bottom:0.5rem">⏱️</div><div class="orb" style="font-size:11px;color:var(--gold);margin-bottom:4px">LEASE</div><div style="font-size:0.85rem;line-height:1.5">Time period the assigned IP is valid. Client must renew before expiry. Prevents IP hoarding.</div></div>
+      <div class="card"><div style="font-size:1.2rem;margin-bottom:0.5rem">🌐</div><div class="orb" style="font-size:11px;color:var(--cyan);margin-bottom:4px">DHCP OPTIONS</div><div style="font-size:0.85rem;line-height:1.5">Extra config delivered with IP: default gateway, DNS servers, domain name, NTP servers.</div></div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-label c">DHCP PORTS</div>
+    <p style="margin-bottom:0.8rem;font-size:0.9rem">DHCP uses UDP (connectionless — fast and simple for broadcast communication):</p>
+    <div>
+      <span class="port-pill pp-udp">UDP 67 → DHCP Server</span>
+      <span class="port-pill pp-udp">UDP 68 → DHCP Client</span>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ DORA ═══════════════ -->
+<div class="divider"></div>
+<section id="dora" data-sec="8">
+<div class="section">
+  <div class="sec-label">DORA PROCESS — CORE CONCEPT</div>
+  <h2 class="sec-title">How DHCP Works — The DORA Process</h2>
+  <p class="sec-desc">DORA is the 4-step conversation between a DHCP client and server. Every time a device joins a network, this exchange happens automatically in milliseconds.</p>
+
+  <div class="dora-wrap">
+    <div class="dora-header">
+      <div class="dora-title">DHCP DORA SIMULATOR</div>
+      <button class="dora-btn" onclick="runDORA()">▶ ANIMATE DORA</button>
+    </div>
+    <div class="dora-stage">
+      <div class="dora-actor actor-client">
+        <div class="dora-actor-icon">💻</div>
+        <div class="dora-actor-name">CLIENT DEVICE</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px">192.168.1.??? (no IP yet)</div>
+      </div>
+      <div class="dora-channel" id="doraChannel">
+        <div class="dora-packet dp-discover" id="dp1">📢 DISCOVER<div style="font-size:9px;margin-top:2px">broadcast — who's there?</div></div>
+        <div class="dp-arrow" id="da1">↓</div>
+        <div class="dora-packet dp-offer" id="dp2">🎁 OFFER<div style="font-size:9px;margin-top:2px">here's 192.168.1.105</div></div>
+        <div class="dp-arrow" id="da2">↑</div>
+        <div class="dora-packet dp-request" id="dp3">✋ REQUEST<div style="font-size:9px;margin-top:2px">I'll take that IP please</div></div>
+        <div class="dp-arrow" id="da3">↓</div>
+        <div class="dora-packet dp-ack" id="dp4">✅ ACK<div style="font-size:9px;margin-top:2px">confirmed! lease granted</div></div>
+      </div>
+      <div class="dora-actor actor-server">
+        <div class="dora-actor-icon">🖥️</div>
+        <div class="dora-actor-name">DHCP SERVER</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px">192.168.1.1 (router)</div>
+      </div>
+    </div>
+    <div class="dora-info" id="doraInfo">Click "ANIMATE DORA" to watch the IP assignment process step by step...</div>
+  </div>
+
+  <div class="dora-steps-list">
+    <div class="dora-step-card dsc-d">
+      <div class="dsc-title">D — DISCOVER</div>
+      <div class="dsc-desc">Client broadcasts to the entire network: "Is there a DHCP server here? I need an IP address!" Sent as broadcast because client has no IP yet and doesn't know the server's address.</div>
+      <div class="dsc-packet">Source: 0.0.0.0 → Dest: 255.255.255.255</div>
+    </div>
+    <div class="dora-step-card dsc-o">
+      <div class="dsc-title">O — OFFER</div>
+      <div class="dsc-desc">DHCP server responds with an available IP address offer, including subnet mask, gateway, DNS, and lease time. Server reserves this IP temporarily while waiting for the client's response.</div>
+      <div class="dsc-packet">Offered IP + Config Options → Client MAC</div>
+    </div>
+    <div class="dora-step-card dsc-r">
+      <div class="dsc-title">R — REQUEST</div>
+      <div class="dsc-desc">Client formally requests the offered IP. This is still broadcast to notify ALL DHCP servers which offer was accepted — so other servers release their reserved addresses.</div>
+      <div class="dsc-packet">Broadcast: "Accepting offer from server X"</div>
+    </div>
+    <div class="dora-step-card dsc-a">
+      <div class="dsc-title">A — ACKNOWLEDGE</div>
+      <div class="dsc-desc">Server confirms the IP assignment and sends full configuration. Client now has a valid IP address, subnet mask, default gateway, and DNS server. Network communication begins.</div>
+      <div class="dsc-packet">IP Lease + Full Config → Client is online ✓</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ DHCP SECURITY ═══════════════ -->
+<div class="divider"></div>
+<section id="dhcp-security" class="sec-bg-alt" data-sec="9">
+<div class="section">
+  <div class="sec-label">SECURITY THREATS</div>
+  <h2 class="sec-title">DHCP Attacks &amp; Defenses</h2>
+  <p class="sec-desc">DHCP has <strong style="color:var(--red)">no built-in authentication</strong>. Any device on the LAN can send DHCP messages. This creates serious security risks that attackers actively exploit.</p>
+
+  <div class="attack-grid">
+    <div class="attack-card">
+      <div class="attack-icon">🌊</div>
+      <div class="attack-name">DHCP STARVATION</div>
+      <div class="attack-desc">Attacker floods the network with fake DHCP requests using spoofed MAC addresses, exhausting the entire IP pool. Legitimate devices can no longer get IPs → Denial of Service.</div>
+      <div class="tag-row"><span class="tag tag-r">DoS</span><span class="tag tag-r">IP Exhaustion</span><span class="tag tag-r">MAC Spoofing</span></div>
+    </div>
+    <div class="attack-card">
+      <div class="attack-icon">👿</div>
+      <div class="attack-name">ROGUE DHCP SERVER</div>
+      <div class="attack-desc">Attacker sets up a fake DHCP server that responds faster than the legitimate one. Victims receive attacker-controlled gateway and DNS settings, redirecting all traffic.</div>
+      <div class="tag-row"><span class="tag tag-r">MITM</span><span class="tag tag-r">Traffic Interception</span></div>
+    </div>
+    <div class="attack-card">
+      <div class="attack-icon">🕵️</div>
+      <div class="attack-name">MAN-IN-THE-MIDDLE</div>
+      <div class="attack-desc">Via rogue DHCP, attacker pushes their machine as the default gateway. All network traffic flows through the attacker who can read, modify, or drop packets silently.</div>
+      <div class="tag-row"><span class="tag tag-r">Passive MITM</span><span class="tag tag-r">SSL Strip</span></div>
+    </div>
+    <div class="attack-card">
+      <div class="attack-icon">🎣</div>
+      <div class="attack-name">DNS MANIPULATION</div>
+      <div class="attack-desc">Rogue DHCP pushes attacker-controlled DNS server addresses. Victims' DNS queries go to attacker's server, enabling domain hijacking and phishing site redirection.</div>
+      <div class="tag-row"><span class="tag tag-r">DNS Hijack</span><span class="tag tag-r">Phishing</span></div>
+    </div>
+  </div>
+
+  <div style="margin-top:2rem">
+    <div class="sec-label" style="margin-bottom:1rem">DEFENSIVE MEASURES</div>
+    <div class="defense-grid">
+      <div class="def-card"><div class="def-icon">🛡️</div><div class="def-title">DHCP SNOOPING</div><div class="def-desc">Switch feature that allows DHCP replies only on trusted ports. Untrusted ports (user devices) can only send DHCP requests, not replies — blocking rogue servers.</div></div>
+      <div class="def-card"><div class="def-icon">🔒</div><div class="def-title">PORT SECURITY</div><div class="def-desc">Limit MAC addresses per switch port. Rate-limit DHCP requests per port to prevent starvation attacks by spoofed MAC floods.</div></div>
+      <div class="def-card"><div class="def-icon">📊</div><div class="def-title">MONITORING &amp; LOGGING</div><div class="def-desc">Log all DHCP lease events (assign/renew/release). Detect anomalies like sudden surge in DISCOVER messages or unknown DHCP servers appearing on the network.</div></div>
+      <div class="def-card"><div class="def-icon">🔐</div><div class="def-title">IP/MAC BINDING</div><div class="def-desc">Reserve specific IPs for known MAC addresses. Filter unknown MACs. Makes it harder for rogue clients to obtain valid IP configurations.</div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ SMB ═══════════════ -->
+<div class="divider"></div>
+<section id="smb" data-sec="10">
+<div class="section">
+  <div class="sec-label">SMB FUNDAMENTALS</div>
+  <h2 class="sec-title">Server Message Block (SMB)</h2>
+  <p class="sec-desc">SMB is the protocol that enables file sharing, printer sharing, and network resource communication in Windows environments. It's the backbone of enterprise Windows networking.</p>
+
+  <div class="smb-diagram">
+    <div class="smb-node">
+      <div class="icon">💻</div>
+      <div class="label" style="color:var(--cyan)">CLIENT A</div>
+      <div class="sublabel">Windows PC</div>
+    </div>
+    <div class="smb-conn">
+      <div class="smb-line"></div>
+      <div class="smb-label">SMB PORT 445</div>
+    </div>
+    <div class="smb-node" style="border-color:rgba(0,255,136,0.3);background:rgba(0,255,136,0.06)">
+      <div class="icon">📁</div>
+      <div class="label" style="color:var(--green)">FILE SERVER</div>
+      <div class="sublabel">\\server\share</div>
+    </div>
+    <div class="smb-conn">
+      <div class="smb-line"></div>
+      <div class="smb-label">SMB PORT 445</div>
+    </div>
+    <div class="smb-node" style="border-color:rgba(255,140,0,0.3);background:rgba(255,140,0,0.06)">
+      <div class="icon">💻</div>
+      <div class="label" style="color:var(--orange)">CLIENT B</div>
+      <div class="sublabel">Windows Laptop</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem;margin:2rem 0">
+    <div class="card">
+      <div style="font-size:1.4rem;margin-bottom:0.6rem">📋</div>
+      <div class="orb" style="font-size:11px;color:var(--cyan);margin-bottom:0.5rem">WHAT SMB DOES</div>
+      <ul style="font-size:0.88rem;line-height:1.9;padding-left:1.2rem;color:var(--text)">
+        <li>File sharing across the network</li>
+        <li>Printer sharing between computers</li>
+        <li>Windows domain authentication</li>
+        <li>Inter-process communication (IPC)</li>
+        <li>Active Directory communication</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div style="font-size:1.4rem;margin-bottom:0.6rem">🏢</div>
+      <div class="orb" style="font-size:11px;color:var(--green);margin-bottom:0.5rem">REAL-WORLD USE CASES</div>
+      <ul style="font-size:0.88rem;line-height:1.9;padding-left:1.2rem;color:var(--text)">
+        <li>Office shared drives (\\fileserver\docs)</li>
+        <li>Network printers in enterprises</li>
+        <li>Active Directory domain environments</li>
+        <li>Windows file servers</li>
+        <li>NAS (Network Attached Storage)</li>
+      </ul>
+    </div>
+    <div class="card" style="border-color:rgba(255,51,102,0.25)">
+      <div style="font-size:1.4rem;margin-bottom:0.6rem">⚠️</div>
+      <div class="orb" style="font-size:11px;color:var(--red);margin-bottom:0.5rem">SMB SECURITY RISKS</div>
+      <ul style="font-size:0.88rem;line-height:1.9;padding-left:1.2rem;color:var(--text)">
+        <li>EternalBlue (CVE-2017-0144) — WannaCry</li>
+        <li>Null session anonymous access</li>
+        <li>SMB relay attacks (NTLM capture)</li>
+        <li>Weak share permissions exposure</li>
+        <li>Outdated SMBv1 protocol still enabled</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:2rem 0">
+    <div class="info-box">
+      <div class="info-label c">SMB VERSIONS</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.88rem">
+        <div style="display:flex;justify-content:space-between"><span style="font-family:'Share Tech Mono',monospace;color:var(--red)">SMBv1</span><span>Deprecated — EternalBlue target. Disable!</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font-family:'Share Tech Mono',monospace;color:var(--orange)">SMBv2</span><span>Windows Vista+ improved performance</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font-family:'Share Tech Mono',monospace;color:var(--green)">SMBv3</span><span>Windows 8+ with encryption support</span></div>
+      </div>
+    </div>
+    <div class="info-box warn">
+      <div class="info-label w">ATTACKER PERSPECTIVE</div>
+      <p style="font-size:0.88rem;line-height:1.6">Open SMB port (445) is one of the most scanned ports in the world. EternalBlue allowed WannaCry to spread to 200,000+ machines globally via SMBv1. Always disable SMBv1.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:1rem">
+    <div class="sec-label" style="margin-bottom:1rem">SMB COMMUNICATION WORKFLOW</div>
+    <div class="flow-row">
+      <div class="flow-box cyan">User Authentication</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">SMB Negotiation</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">Session Setup</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box green">Tree Connect (share access)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box green">File Operations ✓</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ COMBINED FLOW ═══════════════ -->
+<div class="divider"></div>
+<section id="combined" class="sec-bg-alt" data-sec="11">
+<div class="section">
+  <div class="sec-label">PROTOCOLS WORKING TOGETHER</div>
+  <h2 class="sec-title">The Complete Network Lifecycle</h2>
+  <p class="sec-desc">DNS, DHCP, and SMB don't work in isolation. Here's what happens from the moment a device joins a network to when it opens a file on a server — every protocol plays its role.</p>
+
+  <div class="combined-flow">
+    <div class="cf-step">
+      <div class="cf-num" style="color:var(--cyan)">01</div>
+      <div class="cf-content">
+        <div class="cf-proto" style="color:var(--cyan)">DHCP — DORA</div>
+        <div class="cf-action">Device joins network → DHCP assigns IP, subnet, gateway, DNS server</div>
+      </div>
+    </div>
+    <div class="cf-connector"></div>
+    <div class="cf-step">
+      <div class="cf-num" style="color:var(--green)">02</div>
+      <div class="cf-content">
+        <div class="cf-proto" style="color:var(--green)">DNS — RESOLUTION</div>
+        <div class="cf-action">Browser queries DNS to convert domain → IP address (before HTTP)</div>
+      </div>
+    </div>
+    <div class="cf-connector"></div>
+    <div class="cf-step">
+      <div class="cf-num" style="color:var(--orange)">03</div>
+      <div class="cf-content">
+        <div class="cf-proto" style="color:var(--orange)">TCP/IP — HANDSHAKE</div>
+        <div class="cf-action">3-way handshake (SYN → SYN-ACK → ACK) establishes connection to server IP</div>
+      </div>
+    </div>
+    <div class="cf-connector"></div>
+    <div class="cf-step">
+      <div class="cf-num" style="color:#a78bfa)">04</div>
+      <div class="cf-content">
+        <div class="cf-proto" style="color:#a78bfa">HTTP/HTTPS — COMMUNICATION</div>
+        <div class="cf-action">Browser sends HTTP request → Server returns web page content</div>
+      </div>
+    </div>
+    <div class="cf-connector"></div>
+    <div class="cf-step">
+      <div class="cf-num" style="color:var(--gold)">05</div>
+      <div class="cf-content">
+        <div class="cf-proto" style="color:var(--gold)">SMB — FILE ACCESS</div>
+        <div class="cf-action">User connects to \\fileserver\share → SMB authenticates and provides file access</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:2rem;text-align:center">
+    <p style="font-size:0.95rem;line-height:1.7;color:var(--white)">"<strong style="color:var(--cyan)">Modern networking depends on invisible protocols working together.</strong> Remove any one — and the network breaks. Master all three, and you understand the foundation of every enterprise environment."</p>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════ QUIZ ═══════════════ -->
+<div class="divider"></div>
+<section id="quiz" data-sec="12">
+<div class="section">
+  <div class="sec-label">KNOWLEDGE ASSESSMENT</div>
+  <h2 class="sec-title">Test Your Understanding</h2>
+  <p class="sec-desc">Check your knowledge of DNS, DHCP, and SMB concepts with these targeted questions.</p>
+
+  <div class="quiz-score-bar">Score: <span id="qScore">0</span> / <span id="qTotal">0</span></div>
+  <div id="quizContainer"></div>
+</div>
+</section>
+
+<!-- CONCLUSION -->
+<div class="divider"></div>
+<section id="conclusion" data-sec="13">
+  <div class="sec-label" style="justify-content:center;margin-bottom:2rem">SESSION COMPLETE</div>
+  <div class="conc-quote">"Modern networking depends on <span class="hi">invisible protocols</span> working together."</div>
+  <div class="conc-flow">
+    <div class="cbox dhcp">DHCP assigns IP</div>
+    <div class="carr">→</div>
+    <div class="cbox dns">DNS resolves domain</div>
+    <div class="carr">→</div>
+    <div class="cbox tcp">TCP/IP connects</div>
+    <div class="carr">→</div>
+    <div class="cbox smb">SMB shares files</div>
+    <div class="carr">→</div>
+    <div class="cbox done">✓ Network communication complete</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;margin:3rem 0">
+    <div style="text-align:center;padding:1.5rem 2rem;background:var(--glass);border:1px solid var(--border);border-radius:4px;min-width:150px">
+      <div style="font-family:'Orbitron',monospace;font-size:2rem;color:var(--cyan);margin-bottom:0.4rem">7</div><div style="font-size:0.85rem;color:var(--muted)">DNS Record Types</div>
+    </div>
+    <div style="text-align:center;padding:1.5rem 2rem;background:var(--glass);border:1px solid var(--border);border-radius:4px;min-width:150px">
+      <div style="font-family:'Orbitron',monospace;font-size:2rem;color:var(--green);margin-bottom:0.4rem">4</div><div style="font-size:0.85rem;color:var(--muted)">DORA Steps</div>
+    </div>
+    <div style="text-align:center;padding:1.5rem 2rem;background:var(--glass);border:1px solid var(--border);border-radius:4px;min-width:150px">
+      <div style="font-family:'Orbitron',monospace;font-size:2rem;color:var(--orange);margin-bottom:0.4rem">4</div><div style="font-size:0.85rem;color:var(--muted)">DHCP Attack Types</div>
+    </div>
+    <div style="text-align:center;padding:1.5rem 2rem;background:var(--glass);border:1px solid var(--border);border-radius:4px;min-width:150px">
+      <div style="font-family:'Orbitron',monospace;font-size:2rem;color:#a78bfa;margin-bottom:0.4rem">3</div><div style="font-size:0.85rem;color:var(--muted)">Core Protocols</div>
+    </div>
+  </div>
+  <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;text-align:center">
+    NET ACADEMY // MODULE 04 // DNS · DHCP · SMB FUNDAMENTALS
+  </div>
+</section>
+
+<script>
+// ═══════════════ NETWORK CANVAS ═══════════════
+const canvas = document.getElementById('netCanvas');
+const ctx = canvas.getContext('2d');
+let W,H,nodes=[];
+function initCanvas(){
+  W=canvas.width=innerWidth; H=canvas.height=innerHeight;
+  nodes=[];
+  for(let i=0;i<40;i++) nodes.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,r:Math.random()*2+1});
+}
+function drawCanvas(){
+  ctx.clearRect(0,0,W,H);
+  nodes.forEach(n=>{
+    n.x+=n.vx; n.y+=n.vy;
+    if(n.x<0||n.x>W)n.vx*=-1; if(n.y<0||n.y>H)n.vy*=-1;
+    ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,229,255,0.5)'; ctx.fill();
+  });
+  nodes.forEach((a,i)=>nodes.slice(i+1).forEach(b=>{
+    const d=Math.hypot(a.x-b.x,a.y-b.y);
+    if(d<120){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=`rgba(0,229,255,${0.12*(1-d/120)})`;ctx.lineWidth=0.5;ctx.stroke();}
+  }));
+  requestAnimationFrame(drawCanvas);
+}
+initCanvas(); drawCanvas(); window.addEventListener('resize',initCanvas);
+
+// ═══════════════ HERO FEED ═══════════════
+const feedData=[
+  {t:'[+] Resolving google.com → 142.250.183.14',c:'hf-c'},
+  {t:'[+] DHCP Lease Assigned: 192.168.1.105',c:'hf-g'},
+  {t:'[+] SMB Share Accessed: \\\\server\\docs',c:'hf-o'},
+  {t:'[+] DNS Query Complete: facebook.com',c:'hf-c'},
+  {t:'[+] Host Joined Network: 192.168.1.0/24',c:'hf-g'},
+  {t:'[+] MX Record Found: mail.tesla.com',c:'hf-o'},
+  {t:'[*] DNS Zone Transfer Attempt Detected',c:'hf-c'},
+];
+const hf=document.getElementById('heroFeed');
+feedData.forEach((f,i)=>{const el=document.createElement('div');el.className=`hf-item ${f.c}`;el.textContent=f.t;el.style.animationDelay=(i*0.12)+'s';hf.appendChild(el);});
+let fi=feedData.length;
+setInterval(()=>{
+  fi=fi>=feedData.length?0:fi;
+  const f=feedData[fi++];
+  const el=document.createElement('div');el.className=`hf-item ${f.c}`;el.textContent=f.t;el.style.animationDelay='0s';
+  hf.appendChild(el);
+  if(hf.children.length>7)hf.removeChild(hf.firstChild);
+},2500);
+
+// ═══════════════ PROGRESS NAV ═══════════════
+function goSec(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'});}
+const pds=document.querySelectorAll('.pd');
+const secs=document.querySelectorAll('[data-sec]');
+const io=new IntersectionObserver(e=>{e.forEach(en=>{if(en.isIntersecting){const i=parseInt(en.target.getAttribute('data-sec'));pds.forEach(d=>d.classList.remove('active'));if(pds[i])pds[i].classList.add('active');}});},{threshold:0.3});
+secs.forEach(s=>io.observe(s));
+
+// ═══════════════ DNS SERVER DETAIL ═══════════════
+const serverDetails=[
+  {icon:'🌐',color:'var(--cyan)',title:'YOUR BROWSER',desc:'The DNS client. When you type a URL, the browser first checks its own cache. If not found, it asks the operating system\'s DNS resolver. The browser never contacts root servers directly.'},
+  {icon:'📡',color:'var(--cyan)',title:'RECURSIVE RESOLVER (ISP DNS)',desc:'This is the workhorse of DNS. Provided by your ISP (e.g., Jio, Airtel) or public resolvers (8.8.8.8 = Google DNS, 1.1.1.1 = Cloudflare). It does ALL the searching on your behalf — queries root, TLD, and authoritative servers — and caches the result.'},
+  {icon:'🌍',color:'#a78bfa',title:'ROOT SERVER (13 GLOBALLY)',desc:'The top of the DNS hierarchy. There are 13 logical root server addresses (operated by organizations like ICANN, NASA, RIPE NCC). Root servers DON\'T know IPs — they only know where the TLD servers (.com, .org, .in) are located.'},
+  {icon:'📂',color:'var(--green)',title:'TLD SERVER (TOP LEVEL DOMAIN)',desc:'Manages top-level domains like .com, .org, .in, .net. When asked for "facebook.com", the .com TLD server doesn\'t know the IP — but it knows which Authoritative Name Server manages the facebook.com domain specifically.'},
+  {icon:'⭐',color:'var(--orange)',title:'AUTHORITATIVE NAME SERVER',desc:'This is the FINAL authority. It holds the actual DNS records (A, MX, TXT, NS, CNAME) for the domain. When queried, it returns the real IP address. This is what zone transfer attacks target — all records live here.'},
+];
+function showServerDetail(i){
+  const d=serverDetails[i];
+  document.getElementById('serverDetail').innerHTML=`
+    <div style="font-size:2rem;margin-bottom:0.8rem">${d.icon}</div>
+    <div class="orb" style="font-size:12px;color:${d.color};margin-bottom:0.8rem;letter-spacing:2px">${d.title}</div>
+    <p style="font-size:0.9rem;line-height:1.7;color:var(--text)">${d.desc}</p>`;
+}
+
+// ═══════════════ DNS RESOLUTION SIM ═══════════════
+const dnsStepsData=[
+  {cls:'ds-cache',icon:'💾',msg:'Browser checks its own DNS cache... Cache miss! Not found locally.'},
+  {cls:'ds-cache',icon:'🖥️',msg:'OS checks system DNS cache & hosts file... Not cached. Moving to resolver.'},
+  {cls:'ds-resolver',icon:'📡',msg:'Query sent to Recursive Resolver (ISP DNS / 8.8.8.8): "Find IP for ${domain}"'},
+  {cls:'ds-root',icon:'🌍',msg:'Resolver → Root Server: "Where is the .com TLD server?" → Root replies: "Ask ns.com!"'},
+  {cls:'ds-tld',icon:'📂',msg:'Resolver → .com TLD Server: "Who manages ${domain}?" → TLD replies with Authoritative NS'},
+  {cls:'ds-auth',icon:'⭐',msg:'Resolver → Authoritative Server for ${domain}: "Give me the A record!" → Checking...'},
+  {cls:'ds-result',icon:'✅',msg:'IP FOUND! ${domain} = ${ip} | TTL: 300 seconds. Result cached for future use.'},
+  {cls:'ds-resolver',icon:'🚀',msg:'Browser receives IP. TCP handshake begins. HTTP/HTTPS request sent. Page loading!'},
+];
+const fakeIPs={'facebook.com':'157.240.21.35','google.com':'142.250.183.14','tesla.com':'209.133.79.56','youtube.com':'142.250.185.14','amazon.com':'205.251.242.103','instagram.com':'157.240.21.174'};
+function runDNSResolution(){
+  const domain=document.getElementById('dnsInput').value||'facebook.com';
+  const ip=fakeIPs[domain]||`${Math.floor(Math.random()*200)+50}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*254)+1}`;
+  const c=document.getElementById('dnsSteps');
+  c.innerHTML='';
+  dnsStepsData.forEach((s,i)=>{
+    setTimeout(()=>{
+      const el=document.createElement('div');
+      el.className=`dns-step ${s.cls}`;
+      el.innerHTML=`<span class="step-num">${i+1}.</span><span>${s.icon}</span><span class="step-msg">${s.msg.replace(/\$\{domain\}/g,domain).replace(/\$\{ip\}/g,ip)}</span>`;
+      c.appendChild(el);
+      setTimeout(()=>el.classList.add('show'),50);
+      c.scrollTop=c.scrollHeight;
+    },i*700);
+  });
+}
+
+// ═══════════════ DNS RECORDS ═══════════════
+const records=[
+  {type:'A',color:'var(--cyan)',badge:'IPv4',badgeBg:'rgba(0,229,255,0.1)',desc:'Maps a domain name to an IPv4 address. The most fundamental DNS record — the one that points your domain to a server.',example:'example.com → 93.184.216.34',attacker:'Real server IP → target for Nmap scanning. Identify hosting provider (AWS/Azure). Sometimes bypass CDN to find origin.',attackColor:'var(--orange)'},
+  {type:'AAAA',color:'#60a5fa',badge:'IPv6',badgeBg:'rgba(96,165,250,0.1)',desc:'Maps domain to an IPv6 address. Many admins secure IPv4 thoroughly but forget IPv6 — creating hidden attack paths.',example:'example.com → 2001:db8::1',attacker:'Admins often neglect IPv6. Hidden attack surface that bypasses IPv4-focused firewalls and security rules.',attackColor:'var(--red)'},
+  {type:'MX',color:'var(--orange)',badge:'MAIL',badgeBg:'rgba(255,140,0,0.1)',desc:'Identifies the mail server(s) responsible for accepting email for the domain. Multiple MX records with priorities allowed.',example:'example.com → mail.example.com (priority 10)',attacker:'Email server becomes phishing target. Reveals mail provider (Google, Microsoft). Structure for spear-phishing campaigns.',attackColor:'var(--red)'},
+  {type:'NS',color:'var(--green)',badge:'NAMESERVER',badgeBg:'rgba(0,255,136,0.1)',desc:'Specifies which DNS servers are authoritative for the domain. These are the servers attackers target for zone transfers.',example:'example.com → ns1.cloudflare.com',attacker:'Reveals DNS provider (Cloudflare, AWS, GoDaddy). Identifies zone transfer targets. Understand DNS infrastructure.',attackColor:'var(--orange)'},
+  {type:'TXT',color:'#a78bfa',badge:'TEXT',badgeBg:'rgba(167,139,250,0.1)',desc:'Stores arbitrary text. Used for domain verification, SPF email policies, DKIM keys, and general configuration. Often over-informative.',example:'v=spf1 include:_spf.google.com ~all',attacker:'Reveals mail providers, third-party services, verification tokens. Information leakage about internal infrastructure.',attackColor:'var(--red)'},
+  {type:'CNAME',color:'var(--gold)',badge:'ALIAS',badgeBg:'rgba(255,215,0,0.1)',desc:'Creates an alias pointing one domain to another. Commonly used for subdomains pointing to cloud services or CDNs.',example:'shop.example.com → example.shopify.com',attacker:'Reveals third-party services (Shopify, Salesforce, AWS). Shows SaaS dependencies. Backend infrastructure exposure.',attackColor:'var(--orange)'},
+  {type:'PTR',color:'var(--red)',badge:'REVERSE',badgeBg:'rgba(255,51,102,0.1)',desc:'The reverse of an A record — maps an IP address back to a domain name. Used in reverse DNS lookups.',example:'8.8.8.8 → dns.google',attacker:'Scan IP ranges → find hosted domains via reverse lookup. Discover multiple domains on same server. Bug bounty recon.',attackColor:'var(--orange)'},
+];
+const rg=document.getElementById('recordsGrid');
+records.forEach(r=>{
+  const c=document.createElement('div');
+  c.className='rec-card';
+  c.innerHTML=`
+    <div class="rec-header">
+      <span class="rec-type" style="color:${r.color}">${r.type}</span>
+      <span class="rec-badge" style="background:${r.badgeBg};color:${r.color};border:1px solid ${r.color}33">${r.badge}</span>
+    </div>
+    <div class="rec-body">
+      <div class="rec-desc">${r.desc}</div>
+      <div class="rec-example" style="border-left-color:${r.color};color:${r.color}">${r.example}</div>
+      <div class="rec-attacker" style="background:rgba(255,51,102,0.06);border-radius:3px;border-left:3px solid ${r.attackColor}">
+        <span>🎯</span><span style="font-size:0.82rem;line-height:1.5;color:${r.attackColor}">${r.attacker}</span>
+      </div>
+    </div>`;
+  rg.appendChild(c);
+});
+
+// ═══════════════ TERMINAL ═══════════════
+const tOut=document.getElementById('tOutput');
+const tIn=document.getElementById('tInput');
+let tHist=[],tHi=-1;
+const tOutputs={
+  'nslookup tesla.com':`Server:  8.8.8.8
+Address:  8.8.8.8#53
+
+Non-authoritative answer:
+Name:    tesla.com
+<span class="t-ok">Address: 209.133.79.56</span>`,
+
+  'nslookup -type=mx tesla.com':`Server:  8.8.8.8
+Address:  8.8.8.8#53
+
+Non-authoritative answer:
+<span class="t-hi">tesla.com    mail exchanger = 10 mta.tesla.com</span>
+<span class="t-hi">tesla.com    mail exchanger = 20 mta2.tesla.com</span>
+
+<span class="t-warn">; Attacker insight: Mail server targets identified</span>`,
+
+  'nslookup -type=ns tesla.com':`Server:  8.8.8.8
+Address:  8.8.8.8#53
+
+Non-authoritative answer:
+<span class="t-ok">tesla.com  nameserver = ns1.p44.dynect.net</span>
+<span class="t-ok">tesla.com  nameserver = ns2.p44.dynect.net</span>
+<span class="t-ok">tesla.com  nameserver = ns3.p44.dynect.net</span>
+<span class="t-ok">tesla.com  nameserver = ns4.p44.dynect.net</span>
+
+<span class="t-warn">; DNS Provider: DynECT (Dyn/Oracle)</span>`,
+
+  'dig tesla.com':`; <<>> DiG 9.18.0 <<>> tesla.com
+;; QUESTION SECTION:
+;tesla.com.       IN    A
+
+;; ANSWER SECTION:
+<span class="t-ok">tesla.com.    300   IN    A    209.133.79.56</span>
+
+;; Query time: 28 msec
+;; SERVER: 8.8.8.8#53
+;; MSG SIZE rcvd: 54`,
+
+  'dig mx tesla.com':`; <<>> DiG 9.18.0 <<>> MX tesla.com
+;; QUESTION SECTION:
+;tesla.com.       IN    MX
+
+;; ANSWER SECTION:
+<span class="t-ok">tesla.com.   300   IN   MX   10  mta.tesla.com.</span>
+<span class="t-ok">tesla.com.   300   IN   MX   20  mta2.tesla.com.</span>
+
+;; ADDITIONAL SECTION:
+<span class="t-hi">mta.tesla.com.  300  IN  A  209.133.79.57</span>
+
+<span class="t-warn">; [RECON] Mail server IPs mapped. Phishing setup possible.</span>`,
+
+  'dig ns tesla.com':`; <<>> DiG 9.18.0 <<>> NS tesla.com
+;; ANSWER SECTION:
+<span class="t-sec">tesla.com.   3600  IN  NS  ns1.p44.dynect.net.</span>
+<span class="t-sec">tesla.com.   3600  IN  NS  ns2.p44.dynect.net.</span>
+<span class="t-sec">tesla.com.   3600  IN  NS  ns3.p44.dynect.net.</span>
+<span class="t-sec">tesla.com.   3600  IN  NS  ns4.p44.dynect.net.</span>
+
+<span class="t-warn">; [RECON] NS servers identified. Next: attempt zone transfer.</span>`,
+
+  'dig txt tesla.com':`; <<>> DiG 9.18.0 <<>> TXT tesla.com
+;; ANSWER SECTION:
+<span class="t-ok">tesla.com.  3600  IN  TXT  "v=spf1 ip4:209.133.79.0/24 include:_spf.google.com ~all"</span>
+<span class="t-ok">tesla.com.  3600  IN  TXT  "google-site-verification=xxXXXxx"</span>
+<span class="t-ok">tesla.com.  3600  IN  TXT  "MS=ms12345678"</span>
+
+<span class="t-warn">; [RECON] Uses Google Workspace for email. Microsoft services detected.</span>`,
+
+  'dig -x 8.8.8.8':`; <<>> DiG 9.18.0 <<>> -x 8.8.8.8
+;; QUESTION SECTION:
+;8.8.8.8.in-addr.arpa.   IN   PTR
+
+;; ANSWER SECTION:
+<span class="t-ok">8.8.8.8.in-addr.arpa.  21599  IN  PTR  dns.google.</span>
+
+;; Query time: 12 msec
+<span class="t-warn">; PTR record confirmed: 8.8.8.8 is Google's DNS</span>`,
+
+  'dig axfr @ns1.tesla.com tesla.com':`; <<>> DiG 9.18.0 <<>> AXFR @ns1.tesla.com tesla.com
+; (1 server found)
+<span class="t-err">; Transfer failed.</span>
+<span class="t-ok">; Connection to ns1.p44.dynect.net: refused</span>
+
+<span class="t-warn">; Server is properly configured — zone transfer denied.</span>
+<span class="t-warn">; If it had succeeded, entire DNS dump would be returned.</span>
+<span class="t-sec">; Example of a VULNERABLE server response would be:</span>
+<span class="t-sec">; tesla.com.  IN  SOA  ns1... ...</span>
+<span class="t-sec">; dev.tesla.com   IN  A  10.0.1.5</span>
+<span class="t-sec">; admin.tesla.com IN  A  10.0.1.6</span>
+<span class="t-sec">; staging.tesla.com IN A 10.0.1.7</span>`,
+
+  'sublist3r -d tesla.com':`
+[*] Starting Sublist3r...
+[*] Enumerating subdomains for tesla.com
+<span class="t-ok">[+] Found: www.tesla.com</span>
+<span class="t-ok">[+] Found: shop.tesla.com</span>
+<span class="t-ok">[+] Found: blog.tesla.com</span>
+<span class="t-ok">[+] Found: forums.tesla.com</span>
+<span class="t-ok">[+] Found: api.tesla.com</span>
+<span class="t-warn">[+] Found: staging.tesla.com</span>
+<span class="t-warn">[+] Found: dev.tesla.com</span>
+<span class="t-err">[+] Found: admin.tesla.com</span>
+<span class="t-ok">[+] Found: cdn.tesla.com</span>
+<span class="t-ok">[+] Found: media.tesla.com</span>
+
+<span class="t-warn">[*] Total: 10 subdomains found. dev/admin = likely weakly secured.</span>`,
+
+  'ipconfig /all':`Windows IP Configuration
+
+   Host Name . . . . . . . . : WIN-LAPTOP-01
+   Primary Dns Suffix  . . . : corp.internal
+<span class="t-hi">   DNS Servers . . . . . . . : 192.168.1.1</span>
+
+Ethernet adapter Local Area Connection:
+<span class="t-ok">   IPv4 Address. . . . . . . : 192.168.1.105</span>
+<span class="t-ok">   Subnet Mask . . . . . . . : 255.255.255.0</span>
+<span class="t-ok">   Default Gateway . . . . . : 192.168.1.1</span>
+<span class="t-hi">   DHCP Server . . . . . . . : 192.168.1.1</span>
+<span class="t-hi">   Lease Obtained. . . . . . : May 19 2026 09:00:00</span>
+<span class="t-hi">   Lease Expires . . . . . . : May 19 2026 21:00:00</span>`,
+
+  'help':`<span class="t-hi">AVAILABLE COMMANDS:</span>
+  nslookup tesla.com         — Basic A record lookup
+  nslookup -type=mx tesla.com  — Mail server lookup
+  nslookup -type=ns tesla.com  — Name server lookup
+  dig tesla.com              — A record (detailed)
+  dig mx tesla.com           — Mail server records
+  dig ns tesla.com           — Name server records
+  dig txt tesla.com          — TXT records (info leak)
+  dig -x 8.8.8.8             — Reverse DNS (PTR lookup)
+  dig axfr @ns1.tesla.com tesla.com — Zone transfer attempt
+  sublist3r -d tesla.com     — Subdomain enumeration
+  ipconfig /all              — Windows network config
+  clear                      — Clear terminal
+  help                       — Show this menu`
+};
+
+function resolveT(raw){
+  const cmd=raw.trim().toLowerCase();
+  if(cmd==='clear')return '__clear__';
+  for(const k of Object.keys(tOutputs)){if(cmd.includes(k.toLowerCase().replace(/\s+/g,' ').split(' ').slice(-1)[0].replace('.','\\.').replace('-x','\\-x'))){}};
+  if(tOutputs[cmd]) return tOutputs[cmd];
+  // fuzzy match
+  for(const [k,v] of Object.entries(tOutputs)){
+    if(cmd.includes(k.split(' ').pop().replace('.',''))) return v;
+  }
+  if(cmd.includes('nslookup')&&cmd.includes('mx')) return tOutputs['nslookup -type=mx tesla.com'];
+  if(cmd.includes('nslookup')&&cmd.includes('ns')) return tOutputs['nslookup -type=ns tesla.com'];
+  if(cmd.includes('nslookup')) return tOutputs['nslookup tesla.com'];
+  if(cmd.includes('dig')&&cmd.includes('mx')) return tOutputs['dig mx tesla.com'];
+  if(cmd.includes('dig')&&cmd.includes('ns')) return tOutputs['dig ns tesla.com'];
+  if(cmd.includes('dig')&&cmd.includes('txt')) return tOutputs['dig txt tesla.com'];
+  if(cmd.includes('dig')&&(cmd.includes('-x')||cmd.includes('ptr'))) return tOutputs['dig -x 8.8.8.8'];
+  if(cmd.includes('axfr')) return tOutputs['dig axfr @ns1.tesla.com tesla.com'];
+  if(cmd.includes('sublist')) return tOutputs['sublist3r -d tesla.com'];
+  if(cmd.includes('ipconfig')) return tOutputs['ipconfig /all'];
+  if(cmd.includes('dig')) return tOutputs['dig tesla.com'];
+  if(cmd==='help') return tOutputs['help'];
+  return `<span class="t-err">Command not found. Type 'help' for available commands.</span>`;
+}
+function tExec(cmd){
+  if(!cmd.trim())return;
+  tHist.unshift(cmd); tHi=-1;
+  const res=resolveT(cmd);
+  if(res==='__clear__'){tOut.innerHTML='';return;}
+  const pl=document.createElement('div');
+  pl.innerHTML=`<span class="t-ps">analyst@kali:~$</span> <span class="t-cmd-line">${cmd.replace(/</g,'&lt;')}</span>`;
+  tOut.appendChild(pl);
+  setTimeout(()=>{
+    const ol=document.createElement('div');ol.className='t-out';ol.innerHTML=res;tOut.appendChild(ol);
+    tOut.appendChild(document.createElement('div'));tOut.scrollTop=tOut.scrollHeight;
+  },250);
+}
+function tClear(){tOut.innerHTML='';}
+function tRun(cmd){tIn.value=cmd;tExec(cmd);tIn.value='';tIn.focus();}
+tIn.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){tExec(tIn.value);tIn.value='';}
+  else if(e.key==='ArrowUp'){tHi=Math.min(tHi+1,tHist.length-1);tIn.value=tHist[tHi]||'';e.preventDefault();}
+  else if(e.key==='ArrowDown'){tHi=Math.max(tHi-1,-1);tIn.value=tHi>=0?tHist[tHi]:'';e.preventDefault();}
+});
+
+// ═══════════════ DORA ANIMATION ═══════════════
+const doraMessages=[
+  '📢 DISCOVER: Client broadcasts on network (src: 0.0.0.0, dst: 255.255.255.255) — "Is there a DHCP server? I need an IP!"',
+  '🎁 OFFER: DHCP server responds — "I have IP 192.168.1.105 available. Lease time: 12 hours. DNS: 8.8.8.8. Gateway: 192.168.1.1"',
+  '✋ REQUEST: Client formally requests offered IP — Broadcast tells ALL servers which offer was accepted. Others release their reserved IPs.',
+  '✅ ACK: Server confirms lease! Client now has: IP=192.168.1.105, Mask=255.255.255.0, GW=192.168.1.1, DNS=8.8.8.8. Network communication begins!'
+];
+let doraRunning=false;
+function runDORA(){
+  if(doraRunning)return;
+  doraRunning=true;
+  const packets=['dp1','dp2','dp3','dp4'];
+  packets.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('show');});
+  document.getElementById('doraInfo').textContent='Starting DORA process...';
+  packets.forEach((id,i)=>{
+    setTimeout(()=>{
+      const el=document.getElementById(id);
+      if(el)el.classList.add('show');
+      document.getElementById('doraInfo').textContent=doraMessages[i];
+      if(i===3){doraRunning=false;}
+    },(i+1)*1200);
+  });
+}
+
+// ═══════════════ QUIZ ═══════════════
+const questions=[
+  {q:'What does DNS stand for and what is its primary function?',opts:['Domain Network System — assigns IP addresses','Domain Name System — converts domain names to IP addresses','Dynamic Name Service — manages DHCP leases','Data Name Server — stores web content'],ans:1,exp:'✓ DNS = Domain Name System. It converts human-readable domain names (google.com) into machine-readable IP addresses (142.250.x.x).'},
+  {q:'In the DORA process, what does the "D" stand for and who sends it?',opts:['Deny — sent by DHCP server','Detect — sent by network switch','Discover — sent by DHCP client','Define — sent by the router'],ans:2,exp:'✓ D = DISCOVER. The DHCP client (your device) broadcasts this to find available DHCP servers. Source IP is 0.0.0.0 since no IP is assigned yet.'},
+  {q:'Which DNS record type would an attacker query to find a company\'s mail servers?',opts:['A record','AAAA record','MX record','PTR record'],ans:2,exp:'✓ MX (Mail Exchanger) records identify mail servers. Attackers use this to set up phishing campaigns and discover email infrastructure.'},
+  {q:'What DHCP attack floods the IP pool with fake requests to prevent legitimate clients from getting IPs?',opts:['Rogue DHCP','DHCP Starvation','DNS Poisoning','ARP Spoofing'],ans:1,exp:'✓ DHCP Starvation floods the server with requests using spoofed MAC addresses, exhausting all available IPs and causing Denial of Service.'},
+  {q:'Which port does a DHCP server listen on?',opts:['TCP 53','UDP 67','UDP 68','TCP 443'],ans:1,exp:'✓ DHCP Server listens on UDP port 67. DHCP Client uses UDP port 68. Both use UDP because DHCP relies on broadcasts which don\'t use TCP.'},
+  {q:'What is a DNS Zone Transfer attack and which command attempts it?',opts:['IP spoofing via DNS — nmap -sS','Requesting all DNS records from a server — dig axfr','DNS cache poisoning — arpspoof','Subdomain flooding — ping -f'],ans:1,exp:'✓ Zone Transfer (AXFR) requests ALL DNS records from a server. If misconfigured, it dumps every subdomain, IP, and MX record. Command: dig axfr @nameserver domain.com'},
+  {q:'SMB operates on which port and what is its primary purpose?',opts:['Port 443 — encrypted web browsing','Port 22 — secure shell access','Port 445 — file and resource sharing in Windows networks','Port 3306 — database communication'],ans:2,exp:'✓ SMB uses Port 445. It enables file sharing, printer sharing, and Windows network resource access. SMBv1 vulnerability led to the WannaCry ransomware attack.'},
+  {q:'What is the correct order of the DNS resolution process?',opts:['Browser → Authoritative → TLD → Root → Resolver','Browser → Resolver → Root → TLD → Authoritative → IP returned','Root → TLD → Resolver → Browser → IP returned','Authoritative → Root → Browser → IP returned'],ans:1,exp:'✓ Browser checks cache → Recursive Resolver → Root Server → TLD Server (.com) → Authoritative Name Server → Real IP returned. Only the Authoritative server knows the actual IP.'},
+];
+let qScore=0;
+const qc=document.getElementById('quizContainer');
+document.getElementById('qTotal').textContent=questions.length;
+questions.forEach((q,qi)=>{
+  const block=document.createElement('div');
+  block.className='quiz-block';
+  block.innerHTML=`<div class="quiz-q">Q${qi+1}: ${q.q}</div>
+    <div class="quiz-opts">${q.opts.map((o,oi)=>`<button class="qo" data-qi="${qi}" data-oi="${oi}">${o}</button>`).join('')}</div>
+    <div class="qfb" id="qfb${qi}"></div>`;
+  qc.appendChild(block);
+});
+document.querySelectorAll('.qo').forEach(btn=>btn.addEventListener('click',function(){
+  const qi=parseInt(this.dataset.qi),oi=parseInt(this.dataset.oi);
+  const sibs=document.querySelectorAll(`.qo[data-qi="${qi}"]`);
+  if(sibs[0].disabled)return;
+  sibs.forEach((s,si)=>{s.disabled=true;if(si===questions[qi].ans)s.classList.add('correct');});
+  const fb=document.getElementById(`qfb${qi}`);
+  if(oi===questions[qi].ans){qScore++;this.classList.add('correct');fb.innerHTML=`<span style="color:var(--green)">${questions[qi].exp}</span>`;}
+  else{this.classList.add('wrong');fb.innerHTML=`<span style="color:var(--red)">✗ Incorrect. ${questions[qi].exp}</span>`;}
+  fb.classList.add('show');
+  document.getElementById('qScore').textContent=qScore;
+}));
+</script>
+</body>
+</html>
